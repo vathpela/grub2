@@ -1,3 +1,8 @@
+2014-12-07  Curtis Larsen <larsen@dixie.edu>
+
+	* grub-core/net/tcp.c (grub_net_recv_tcp_packet): Fix double
+	free when multiple empty segments were received (closes 42765).
+
 2014-06-21  Роман Пехов <roman_pekhov>
 
 	* grub-core/commands/loadenv.c (check_blocklists): Fix overlap check.
