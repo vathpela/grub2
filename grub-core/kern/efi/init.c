@@ -62,6 +62,8 @@ grub_machine_get_bootlocation (char **device, char **path)
   if (!*device && grub_efi_net_config)
     {
       grub_efi_net_config (image->device_handle, device, path);
+      /* grub_efi_net_config returns the directory path, not the boot filename,
+         so don't strip any further. */
       return;
     }
 
