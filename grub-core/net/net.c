@@ -1334,8 +1334,6 @@ grub_net_open_real (const char *name)
 	    else
 	      ret->server = NULL;
 	    ret->fs = &grub_net_fs;
-	    ret->offset = 0;
-	    ret->eof = 0;
 	    return ret;
 	  }
       }
