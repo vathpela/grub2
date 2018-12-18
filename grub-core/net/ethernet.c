@@ -50,7 +50,6 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
 {
   grub_uint8_t *eth;
   grub_err_t err;
-  grub_uint16_t vlantag_id = VLANTAG_IDENTIFIER;
   grub_uint8_t hw_addr_len = inf->card->default_address.len;
   grub_uint8_t etherhdr_size = 2 * hw_addr_len + 2;
 
@@ -71,11 +70,14 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
   grub_memcpy (eth, inf->hwaddress.mac, hw_addr_len);
   eth += hw_addr_len;
 
-  /* Check if a vlan-tag is present. */
-  if (vlantag != 0)
+  /* Check and add a vlan-tag if needed. */
+  if (inf->vlantag != 0)
     {
-      *((grub_uint32_t *)eth) = grub_cpu_to_be32 (vlantag);
-      eth += sizeof (vlantag);
+      /* Add the tag */
+      *((grub_uint16_t*) eth) = grub_cpu_to_be16_compile_time (VLANTAG_IDENTIFIER);
+      eth += 2;
+      *((grub_uint16_t*) eth) = grub_cpu_to_be16 (inf->vlantag);
+      eth += 2;
     }
 
   /* Write ethertype */
@@ -89,18 +91,6 @@ send_ethernet_packet (struct grub_net_network_level_interface *inf,
       if (err)
 	return err;
       inf->card->opened = 1;
-    }
-
-  /* Check and add a vlan-tag if needed. */
-  if (inf->vlantag != 0)
-    {
-      /* Move eth type to the right */
-      grub_memcpy ((char *) nb->data + etherhdr_size - 2,
-                   (char *) nb->data + etherhdr_size - 6, 2);
-
-      /* Add the tag in the middle */
-      grub_memcpy ((char *) nb->data + etherhdr_size - 6, &vlantag_id, 2);
-      grub_memcpy ((char *) nb->data + etherhdr_size - 4, (char *) &(inf->vlantag), 2);
     }
 
   return inf->card->driver->send (inf->card, nb);
